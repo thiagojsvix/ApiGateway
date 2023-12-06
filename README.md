@@ -1,13 +1,13 @@
-# booktiq
+# API Gateway Ocelot
 Projeto de uma bookstore implementando um API Gateway usando o framework OCELOT
 
-## ConfiguraÁ„o do Arquivo Ocelot.Json
-1. Upstream: para o OCELOT ele È o serviÁos que est· acima de todos, por essa raz„o ele se entitulo de Upstream. 
-Considerando essa definiÁ„o, todas as configuraÁıes que comeÁarem com Upstream est„o referenciando ao serviÁos de ApiGateway
-2. DownStream: como o OCELOT se considera o UP os ServiÁos APIs que est„o abaixo dele s„o considerados DownStream, 
-logo todas as configuraÁıes que comeÁarem com esse prefixo È sobre o serviÁo de API.
+## Configura√ß√£o do Arquivo Ocelot.Json
+1. Upstream: para o OCELOT ele √© o servi√ßos que est√° acima de todos, por essa raz√£o ele se entitulo de Upstream. 
+Considerando essa defini√ß√£o, todas as configura√ß√µes que come√ßarem com Upstream est√£o referenciando ao servi√ßos de ApiGateway
+2. DownStream: como o OCELOT se considera o UP os Servi√ßos APIs que est√£o abaixo dele s√£o considerados DownStream, 
+logo todas as configura√ß√µes que come√ßarem com esse prefixo √© sobre o servi√ßo de API.
 
-Abaixo segue um exemplo da configuraÁ„o
+Abaixo segue um exemplo da configura√ß√£o
 
 ```json
 {
@@ -28,30 +28,30 @@ Abaixo segue um exemplo da configuraÁ„o
 }
 ```
 
-### DescriÁ„o dos termos no arquivo de configuraÁ„o
+### Descri√ß√£o dos termos no arquivo de configura√ß√£o
 
-* **DownstreamPathTemplate**: Path para acessar o serviÁos do API
-* **DownstreamScheme**: Define o protocolo que ser· utilizado. Normalmente `http` ou `http`
-* **DownstreamHostAndPorts**: Define o host de destino e a porta do serviÁos que ser· utilizado:
+* **DownstreamPathTemplate**: Path para acessar o servi√ßos do API
+* **DownstreamScheme**: Define o protocolo que ser√° utilizado. Normalmente `http` ou `http`
+* **DownstreamHostAndPorts**: Define o host de destino e a porta do servi√ßos que ser√° utilizado:
 * **UpstreamPathTemplate**: Path para orientar o OCELOT qual rota deve utilizar
-* **UpstreamHttpMethod**: Verbo ou MÈtodo HTTP que ser· utilizado. Normalmente utilizado o `GET`, mas pode Ser `PUT, POST, DELETE` entre outros
+* **UpstreamHttpMethod**: Verbo ou M√©todo HTTP que ser√° utilizado. Normalmente utilizado o `GET`, mas pode Ser `PUT, POST, DELETE` entre outros
 
-``Obs.: O endereÁo do ServiÁoAPI que ser· acessado È: https://jsonplaceholder.typicode.com/users`` 
+``Obs.: O endere√ßo do Servi√ßoAPI que ser√° acessado √©: https://jsonplaceholder.typicode.com/users`` 
 
-A propriedade **ServiceName** dentre de `Routes` È utilizado para configurar o [Service Discovery](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html).
-Como ainda n„o est· utilizado o ServiceDisconvery È necess·rio que essa opÁ„o fique em branco.
+A propriedade **ServiceName** dentre de `Routes` √© utilizado para configurar o [Service Discovery](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html).
+Como ainda n√£o est√° utilizado o ServiceDisconvery √© necess√°rio que essa op√ß√£o fique em branco.
 
-## AgregaÁ„o
-AgregaÁ„o È um mecanismo que existe no OCELOT que ele pode fazer varias requisiÁıes pelo cliente e agregar o resultados dessas
-requisiÁıes em um novo obejto e retornar esse objeto completo.
+## Agrega√ß√£o
+Agrega√ß√£o √© um mecanismo que existe no OCELOT que ele pode fazer varias requisi√ß√µes pelo cliente e agregar o resultados dessas
+requisi√ß√µes em um novo obejto e retornar esse objeto completo.
 
-Imagine a seguinte situaÁ„o: NÛs temos 3 serviÁos de API implementados: `Price, Book e Rating`. Para ter a informaÁıes completa
-nosso serviÁo web precisaria fazer 3 requisiÁıes, uma para cada serviÁos. Depois precisaria pegar o resultado de cada consulta
-e montar uma novo objeto para ter assim o Livro com preÁo e pontuaÁ„o.
+Imagine a seguinte situa√ß√£o: N√≥s temos 3 servi√ßos de API implementados: `Price, Book e Rating`. Para ter a informa√ß√µes completa
+nosso servi√ßo web precisaria fazer 3 requisi√ß√µes, uma para cada servi√ßos. Depois precisaria pegar o resultado de cada consulta
+e montar uma novo objeto para ter assim o Livro com pre√ßo e pontua√ß√£o.
 
-Para facilitar as coisa o OCELOT implementa essa funcionalidade de [Request Agregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html) para vocÍ.
+Para facilitar as coisa o OCELOT implementa essa funcionalidade de [Request Agregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html) para voc√™.
 
-Para configurar essa funcionalidade È necess·rio adicionar a tag `Aggregates` nas configuraÁıes conforme abaixo.
+Para configurar essa funcionalidade √© necess√°rio adicionar a tag `Aggregates` nas configura√ß√µes conforme abaixo.
 
 ```json
 {
@@ -118,17 +118,17 @@ Para configurar essa funcionalidade È necess·rio adicionar a tag `Aggregates` na
 }
 ```
 
-Observe acima que foi adicionado o grupo Aggregates e nele temos a configuraÁıes abaixo:
+Observe acima que foi adicionado o grupo Aggregates e nele temos a configura√ß√µes abaixo:
 
-* **RouteKeys**: Chave dos roteamentos que ser„o chamado pelo rota de agregaÁ„o
-* **UpstreamPathTemplate**: path da rota que representa essa agregaÁ„o
-* **Aggregator**: Classe C# que ser· responsavel por representar a agregaÁ„o. **O descrito aqui deve ser exatamente o mesmo nome utilizada na classe**;
+* **RouteKeys**: Chave dos roteamentos que ser√£o chamado pelo rota de agrega√ß√£o
+* **UpstreamPathTemplate**: path da rota que representa essa agrega√ß√£o
+* **Aggregator**: Classe C# que ser√° responsavel por representar a agrega√ß√£o. **O descrito aqui deve ser exatamente o mesmo nome utilizada na classe**;
 
-Se vocÍ prestou atenÁ„o, nos rotas acima de cada um dos serviÁos API foi adicionado os seguintes parametros: `Priority e Key`.
-Esse parametros representam a ordem em que as rotas ser„o chamadas e o nome da chave que ser· mencionado na agregaÁ„o respectivamente.
+Se voc√™ prestou aten√ß√£o, nos rotas acima de cada um dos servi√ßos API foi adicionado os seguintes parametros: `Priority e Key`.
+Esse parametros representam a ordem em que as rotas ser√£o chamadas e o nome da chave que ser√° mencionado na agrega√ß√£o respectivamente.
 
-Na Classe `BookDetailsAggregator` descrita abaixo, observe que È necess·rio implentar a interface `IDefinedAggregator` do ocelot
-para que ele possa ser invocado quando a rota de agregaÁ„o for acionado.
+Na Classe `BookDetailsAggregator` descrita abaixo, observe que √© necess√°rio implentar a interface `IDefinedAggregator` do ocelot
+para que ele possa ser invocado quando a rota de agrega√ß√£o for acionado.
 
 ```csharp
  public class BookDetailsAggregator : IDefinedAggregator
@@ -170,13 +170,13 @@ para que ele possa ser invocado quando a rota de agregaÁ„o for acionado.
     }
 ```
 
-Observe que È implementado o mÈtodo `Aggregate` reponsavel por toda a lÛgica 
-de agregaÁ„o assim que as rotas da agregaÁ„o terminarem o seu processo. Em seguida 
-È redirecionado para esse mÈtodo onde devemos remontar um Json e responder a agregaÁ„o desejada.
+Observe que √© implementado o m√©todo `Aggregate` reponsavel por toda a l√≥gica 
+de agrega√ß√£o assim que as rotas da agrega√ß√£o terminarem o seu processo. Em seguida 
+√© redirecionado para esse m√©todo onde devemos remontar um Json e responder a agrega√ß√£o desejada.
 
-Para maiors informaÁıes consultar a documentaÁ„o oficial de [Request Aggregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html#basic-expecting-json-from-downstream-services)
+Para maiors informa√ß√µes consultar a documenta√ß√£o oficial de [Request Aggregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html#basic-expecting-json-from-downstream-services)
 
-Para testar o serviÁo de agregaÁ„o funcionando marque o projeto para exectuar com multiplos projetos e chame o [endereÁo](http://localhost:9000/api/v1/books/3872339b-5556-4c94-b7ca-2cc8abde32d8/aggregated-details):
+Para testar o servi√ßo de agrega√ß√£o funcionando marque o projeto para exectuar com multiplos projetos e chame o [endere√ßo](http://localhost:9000/api/v1/books/3872339b-5556-4c94-b7ca-2cc8abde32d8/aggregated-details):
 
 
 # Tecnologia
