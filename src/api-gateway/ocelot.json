@@ -1,5 +1,12 @@
 {
-  "GlobalConfiguration": {},
+  "GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Scheme": "http",
+      "Host": "localhost",
+      "Port": 8500,
+      "Type": "Consul"
+    }
+  },
   "Routes": [
     {
       "ServiceName": "",
@@ -16,15 +23,18 @@
     },
 
     {
-      "ServiceName": "",
+      "ServiceName": "book-service",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "DownstreamPathTemplate": "/api/books/{id}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "book-service",
-          "Port": 9001
-        }
-      ],
+      //"DownstreamHostAndPorts": [
+      //  {
+      //    "Host": "book-service",
+      //    "Port": 9001
+      //  }
+      //],
       "UpstreamPathTemplate": "/api/v1/books/{id}/details",
       "UpstreamHttpMethod": [ "Get" ],
       "Priority": 2,
@@ -32,15 +42,18 @@
     },
 
     {
-      "ServiceName": "",
+      "ServiceName": "pricing-service",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "DownstreamPathTemplate": "/api/booksprices/{id}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "pricing-service",
-          "Port": 9002
-        }
-      ],
+      //"DownstreamHostAndPorts": [
+      //  {
+      //    "Host": "pricing-service",
+      //    "Port": 9002
+      //  }
+      //],
       "UpstreamPathTemplate": "/api/v1/books/{id}/price",
       "UpstreamHttpMethod": [ "Get" ],
       "Priority": 1,
@@ -48,15 +61,18 @@
     },
 
     {
-      "ServiceName": "",
+      "ServiceName": "rating-service",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
       "DownstreamPathTemplate": "/api/booksratings/{id}",
       "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "rating-service",
-          "Port": 9003
-        }
-      ],
+      //"DownstreamHostAndPorts": [
+      //  {
+      //    "Host": "rating-service",
+      //    "Port": 9003
+      //  }
+      //],
       "UpstreamPathTemplate": "/api/v1/books/{id}/ratings",
       "UpstreamHttpMethod": [ "Get" ],
       "Priority": 0,
