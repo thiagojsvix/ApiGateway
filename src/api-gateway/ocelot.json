@@ -9,7 +9,7 @@
   },
   "Routes": [
     {
-      "ServiceName": "book-service",
+      "ServiceName": "book-service-api",
       "LoadBalancerOptions": {
         "Type": "LeastConnection"
       },
