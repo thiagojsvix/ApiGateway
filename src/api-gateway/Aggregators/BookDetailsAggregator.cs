@@ -45,7 +45,11 @@ namespace api_gateway.Aggregators
                 resultingAggregation.Error("There was error when loading the book details.");
             }
 
-            response.Content = new ObjectContent<ResultingAggregation<Book>>(resultingAggregation, new JsonMediaTypeFormatter());
+            response.Content = new ObjectContent<ResultingAggregation<Book>>(resultingAggregation,
+                new JsonMediaTypeFormatter()
+                {
+                    Indent = true
+                });
 
             return new DownstreamResponse(response);
         }

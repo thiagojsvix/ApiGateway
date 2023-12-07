@@ -5,7 +5,8 @@ services:
     build:
         context: ./src/book-service
         dockerfile: Dockerfile
-    container_name: book-service
+    container_name: book-service-api
+    hostname: book-service-host
 
   pricing-service:
     image: pricing-service:booktiq-apiservice

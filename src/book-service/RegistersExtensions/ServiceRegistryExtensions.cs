@@ -28,14 +28,12 @@ namespace BookService.RegistersExtensions
             var logger = app.ApplicationServices.GetRequiredService<ILoggerFactory>().CreateLogger("AppExtensions");
             var lifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
 
-            //var uri = new Uri(address);
             var registration = new AgentServiceRegistration()
             {
-                ID = serviceSettings.ServiceName, //{uri.Port}",
-                // servie name
-                Name = serviceSettings.ServiceName,
-                Address = serviceSettings.ServiceHost, //$"{uri.Host}",
-                Port = serviceSettings.ServicePort  // uri.Port
+                ID = serviceSettings.ServiceName,       //{uri.Port}",
+                Name = serviceSettings.ServiceName,     // servie name
+                Address = serviceSettings.ServiceHost,  //$"{uri.Host}",
+                Port = serviceSettings.ServicePort      // uri.Port
             };
 
             logger.LogInformation("Registering with Consul");

@@ -26,7 +26,8 @@ namespace pricing_service
 
             services.AddConsulSettings(ServiceSettings);
 
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(opt => { opt.JsonSerializerOptions.WriteIndented = true; });
 
             services.AddOptions();
         }
