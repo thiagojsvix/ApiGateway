@@ -443,7 +443,7 @@ clear; docker run --rm --name book-service-3 --network booktiq_default -e Servic
 ```
 
 # Tecnologia
-[Ocelot](https://github.com/ThreeMammals/Ocelot)
-[Docker](https://docs.docker.com/develop/)
-[Consul](https://developer.hashicorp.com/consul/tutorials/developer-discovery)
+[Ocelot](https://github.com/ThreeMammals/Ocelot)  
+[Docker](https://docs.docker.com/develop/)  
+[Consul](https://developer.hashicorp.com/consul/tutorials/developer-discovery)  
 [.Net Core 3.1](https://learn.microsoft.com/pt-br/aspnet/core/introduction-to-aspnet-core?view=aspnetcore-8.0)
