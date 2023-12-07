@@ -435,6 +435,13 @@ Para acessar o Consul e verificar os serviços de API registrados, basta acessar
 
 ![consul-ui](./imgs/consul-ui.png)
 
+### Configurando Load Balance
+
+```powershell
+clear; docker run --rm --name book-service-3 --network booktiq_default -e ServiceSettings__ServicePort=9006 -e ServiceSettings__ServiceHost=book-service-3 book-service:booktiq-apiservice
+
+```
+
 # Tecnologia
 [Ocelot](https://github.com/ThreeMammals/Ocelot)
 [Docker](https://docs.docker.com/develop/)

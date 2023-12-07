@@ -28,7 +28,7 @@ services:
         - 9000:9000
 
   consul:
-    image: consul
+    image: consul:1.15.4
     container_name: "consul"
     hostname: "consul"
     ports:

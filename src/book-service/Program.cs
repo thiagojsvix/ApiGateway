@@ -1,5 +1,12 @@
+using BookService.Settings;
+
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+
+using System;
+using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace product_service
 {
@@ -10,17 +17,28 @@ namespace product_service
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .AddJsonFile("appsettings.Development.json", true, true)
+                .AddEnvironmentVariables()
+                .AddCommandLine(args)
+                .Build();
+
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder
-                        .UseKestrel(options =>
+                    webBuilder.UseKestrel(options =>
                         {
+                            var serviceSettings = configuration.GetSection("ServiceSettings").Get<ServiceSettings>();
+
                             options.AddServerHeader = false;
-                            options.ListenAnyIP(9001);
-                        })
-                        .UseStartup<Startup>();
+                            options.ListenAnyIP(serviceSettings.ServicePort);
+                           
+                        }).UseStartup<Startup>();
                 });
+        }
     }
 }

@@ -22,19 +22,19 @@
     },
 
     {
-      //"ServiceName": "book-service",
 
       // Using Load Balancer without Consul
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "book-service",
-          "Port": 9001
-        },
-        {
-          "Host": "book-service2",
-          "Port": 9005
-        }
-      ],
+      //"DownstreamHostAndPorts": [
+      //  {
+      //    "Host": "book-service",
+      //    "Port": 9001
+      //  },
+      //  {
+      //    "Host": "book-service2",
+      //    "Port": 9005
+      //  }
+      //],
+      "ServiceName": "book-service",
       "LoadBalancerOptions": {
         "Type": "LeastConnection"
       },

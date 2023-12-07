@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 using BookService.Helpers;
 using BookService.Models;
@@ -23,7 +24,14 @@ namespace product_service.Controllers
         [HttpGet("hostname")]
         public string GetHostName()
         {
-            return Environment.MachineName;
+            var hostname = Dns.GetHostName();
+            var ipaddress = Dns.GetHostAddresses(hostname);
+
+            var ipResult = string.Join("-", ipaddress.Select(x => x.ToString()));
+
+            var result = $"MachineNae: {Environment.MachineName} - HostName: {hostname} - IPAddress: {ipResult}";
+
+            return result;
         }
 
         [HttpGet()]
