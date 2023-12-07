@@ -2,7 +2,9 @@ version: '3.7'
 services:
   book-service:
     image: book-service:booktiq-apiservice
-    build: ./src/book-service
+    build:
+        context: ./src/book-service
+        dockerfile: Dockerfile
     container_name: book-service
 
   pricing-service:
@@ -23,7 +25,7 @@ services:
         - 9000:9000
 
   consul:
-    image: consul
+    image: consul:1.15.4
     container_name: "consul"
     hostname: "consul"
     ports:

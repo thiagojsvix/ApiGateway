@@ -1,4 +1,4 @@
-# booktiq
+# API Gateway
 Projeto de uma bookstore implementando um API Gateway usando o framework OCELOT
 
 ## Configuração do Arquivo Ocelot.Json
@@ -176,10 +176,254 @@ de agregação assim que as rotas da agregação terminarem o seu processo. Em segui
 
 Para maiors informações consultar a documentação oficial de [Request Aggregation](https://ocelot.readthedocs.io/en/latest/features/requestaggregation.html#basic-expecting-json-from-downstream-services)
 
-Para testar o serviço de agregação funcionando marque o projeto para exectuar com multiplos projetos e chame o [endereço](http://localhost:9000/api/v1/books/3872339b-5556-4c94-b7ca-2cc8abde32d8/aggregated-details):
 
+## Configurando Projeto para rodar no Docker
+Para facilitar nossos testes vamos iniciar a configuração do projeto no docker. Para tal faz se necessário criar os arquivos de configuração do docker.
+
+![docker settins](./imgs/docker-settings.png)
+
+Observe na imagem acima que foi adicionado o arquivo **DockerFile** em todos os projeto, inclusive no projetos `pricing-service` e `rating-service`. 
+Também foi adicionado o arquivo `docker-compose-yml` e `.dockerignore`. 
+> Atenção para o local que foi adicionado o arquivo `docker-compose.yml`
+
+### Arquivo `Dockerfile` 
+
+```docker
+# Stage 1
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build
+WORKDIR /build
+EXPOSE 9001
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app
+
+# Stage 2
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 AS final
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "book-service.dll"]
+```
+
+> Observer que está sendo exposto a porta 9001 que é a mesma porta configurada no API.
+> Essa mesma configuração se repete para os demais serviços de API
+
+### Arquivo docker-compose.yml
+
+```shell
+version: '3.7'
+services:
+  book-service-api:
+    image: book-service:booktiq-apiservice
+    build:
+        context: ./src/book-service
+        dockerfile: Dockerfile
+    container_name: book-service
+
+  pricing-service:
+    image: pricing-service:booktiq-apiservice
+    build: ./src/pricing-service
+    container_name: pricing-service
+
+  rating-service:
+    image: book-rating:booktiq-apiservice
+    build: ./src/rating-service
+    container_name: rating-service
+
+  api-gateway:
+    image: api-gateway:booktiq-apiservice
+    build: ./src/api-gateway
+    container_name: api-gateway
+    ports:
+        - 9000:9000
+
+  consul:
+    image: consul:1.15.4
+    container_name: "consul"
+    hostname: "consul"
+    ports:
+        - 8500:8500
+    command: agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0
+```
+> Para entender a diferença entre build do serviço book-service e os demais acesso o [link](https://docs.docker.com/compose/compose-file/build/#attributes)
+
+No arquivo `docker-compose` estamos defindo cada um dos serviços do projeto.
+Observe que os únicos que estão com o parametros ports definido é `api-gateway` e `consul`, sendo assim são os únicos que poderam ser acessados externamento.
+
+> O nome que é dado ao serviço no arquivo `docker-compose` deve ser o mesmo nome de serviço no arquivo de configuração do OCELOT.
+
+```json
+  "Routes": [
+    {
+      "ServiceName": "book-service-api",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "DownstreamPathTemplate": "/api/books/{id}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/v1/books/{id}/details",
+      "UpstreamHttpMethod": [ "Get" ],
+      "Priority": 2,
+      "Key": "Book"
+    },
+```
+
+Observe no trecho de configuração acima que a propriedade ServiceName da rota tem o exato nome do serviços no arquivo `docker-compose`.
+
+O nome do serviço ==book-service-api== saiu do padrão justamente para explicar a relação entre a propriedade ==ServiceName do OCELOT== e nome do servico no ==docker-compose==
+
+Caso queira executar o serviço do consul separadamente, utilize o comando abaixo:
+
+`docker run -d -p 8500:8500 -p 8600:8600/udp --name=badger consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0`
+
+### Rodar projeto com docker-compose
+Para executar o projeto com docker compose execute os comandos abaixo:
+```bash
+clear; docker compose down --remove-orphans --rmi local; docker compose up -d
+```
+
+Esse comando primeiro vai limpar a tela do prompt depois, vai tentar remover todos os serviços que estão listados nos docker-compose em seguida tenta criar as imagens e subir os containers.
+
+## Configura o Service Discovery com CONSUL
+
+Com já foi observado no arquivo ==docker-compose== estamos iniciando um container do Consul.
+O ==Consul== será utilizado juntamente do ==OCELOT== para facilitar a descoberta de serviços na rede. 
+
+Como os nossa api estão configuradas no docker e não temos controle de sua configuração de rede, fica mais dificil para nossas aplicação web acessarem esse serviços de api. 
+
+Para resolver esse problema e não termos que mudar a configuração de nossos clientes toda vez que fizermos atualização de container de serviço API, iremos utilizar o ==CONSULT== para identificar esse novo container e deixa-lo acessivel a nossa ==API Gateway==
+
+```json
+{
+      "ServiceName": "",
+      "DownstreamPathTemplate": "/api/books/{id}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "book-service",
+          "Port": 9001
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/books/{id}/details",
+      "UpstreamHttpMethod": [ "Get" ],
+      "Priority": 2,
+      "Key": "Book"
+    },
+```
+
+Conforme pode ser visto no trecho de configuração do ocelot acima. Anteriomente quando tinhamos que configurar um novo serviços, tinhamos que definir o host e porta no serviço API. Como pode ser percebido no arquivo abaixo, com auxio do Serviço de Discoberta do Consul, não será mais necessário.
+
+```json
+"GlobalConfiguration": {
+    "ServiceDiscoveryProvider": {
+      "Scheme": "http",
+      "Host": "consul",
+      "Port": 8500,
+      "Type": "Consul"
+    }
+  },
+  "Routes": [
+    {
+      "ServiceName": "book-service-api",
+      "LoadBalancerOptions": {
+        "Type": "LeastConnection"
+      },
+      "DownstreamPathTemplate": "/api/books/{id}",
+      "DownstreamScheme": "http",
+      "UpstreamPathTemplate": "/api/v1/books/{id}/details",
+      "UpstreamHttpMethod": [ "Get" ],
+      "Priority": 2,
+      "Key": "Book"
+    }
+  ]
+}
+```
+
+Na seção de configuração das rotas das API agora só é necessário informar o `ServiceName` e o `LoadBalancerOptins` e também temos que fazer referencia ao ao Serviço de Discoberta na seção `GlobalConfiguration:ServiceDiscoveryProvider` 
+
+Vale destacar que o parametro `host` e `type` possuem o mesmo nome porém com funcionalidade diferente:
+* Host: serve para identificar o nome do serviço na rede que ira fazer o ServiceDiscovery. Essa configuração deve ser a mesma especificada no parametro `hostname` do `docker-compose`
+* Type: serve para identificar qual dos tipo de serviço de descoberta suporta pelo OCELOT está sendo utilizando.
+
+> Para maiores informações sobre como configurar o serviços de descoberta do OCELOT, consulte esse [link](https://ocelot.readthedocs.io/en/latest/features/servicediscovery.html#service-discovery).
+
+Para finalizar a configuração do Serviço de API-Gateway faz-se necessário chamar o serviço na classe `Startup.cs` do projeto.
+
+![AddConsul](./imgs/AddConsul.png)
+![AddConsul](./imgs/dependencia-consul.png)
+
+Daqui pra frente temos que configurar cada um dos serviços de API para se registrar no ==CONSUL== assim que forem iniciados.
+
+### Configurações nos Serviços de API para registrar no Consult
+A primeira coisa que temos que fazer é adicionar o pacote do Consul ao projeto. Para fazer isso você pode usar o comando abaixo
+`dotnet add package Consul --version 1.6.1.1`
+
+![AddConsul](./imgs/dependencia-consul-api.png)
+
+Deve ficar conforme apresentado na imagem acima.
+
+Em seguida temos que realiar algumas configurações na aplicação conforme apresentado na imagem abaixo.
+
+![configuracao-consul-api](./imgs/configuracao-consul-api.png)
+
+Na imagem acima estamos destacando quais os arquivos que sofreram alterações para efetuar a configuração de auto registro do serviços de API.
+
+Abaixo iremos destar arquivo por arquivo e comentar os principais pontos de cada um.
+
+![Startup-api](./imgs/startup-api.png)
+
+No arquivo de Startup do projeto de API temos o destaque para o método ConfigureService onde adicionamos a extensão AddCOnsultSettings. Depois fazemos a chamado do serviço do Consul no método Configure passando a propriedade ServiceSettins que já foi instanciada no método ConfigureServices;
+
+![service-registry-extensions](./imgs/service-registry-extensions.png)
+
+No método AddConsultSettings estamos adicionado ao container de injeção o endereço do serviço de discoberta.
+No método UseConsult fazendo o registro do API no consul, e logando o que está ocorrendo;
+
+![startup-boostrap-extensions](./imgs/startup-boostrap-extensions.png)
+
+Aqui na classe StartupBoostrapExtensions é feito a leitura das configurações feita no AppSettings.json e retorna para o método que o invocou.
+
+
+```json
+"ServiceSettings": {
+    "ServiceName": "book-service",
+    "ServiceHost": "localhost",
+    "ServicePort": 9001,
+    "ServiceDiscoveryAddress": "http://consul:8500"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  }
+```
+
+Acima é descrito a configuração do appsettings.development.json
+
+```csharp
+namespace BookService.Settings
+{
+    public class ServiceSettings
+    {
+        public string ServiceName { get; set; }
+        public string ServiceHost { get; set; }
+        public int ServicePort { get; set; }
+        public string ServiceDiscoveryAddress { get; set; }
+    }
+}
+
+A classe ServiceSettings é um representação em objeto das configurações feita no appsettings.development.json
+```
+
+Para acessar o Consul e verificar os serviços de API registrados, basta acessar a [url](http://localhost:8500/ui).
+
+> Lembra que essa configuração deve ser replicada para cada um dos serviço de API da solução.
+
+![consul-ui](./imgs/consul-ui.png)
 
 # Tecnologia
 [Ocelot](https://github.com/ThreeMammals/Ocelot)
 [Docker](https://docs.docker.com/develop/)
+[Consul](https://developer.hashicorp.com/consul/tutorials/developer-discovery)
 [.Net Core 3.1](https://learn.microsoft.com/pt-br/aspnet/core/introduction-to-aspnet-core?view=aspnetcore-8.0)
